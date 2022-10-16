@@ -16,11 +16,11 @@ fn get_page_size() -> Result<usize, io::Error> {
         Ok(Some(size)) => Ok(size as usize),
         Ok(None) => {
             eprintln!("PAGE_SIZE variable is not supported");
-            return Err(io::Error::from(io::ErrorKind::Unsupported));
+            Err(io::Error::from(io::ErrorKind::Unsupported))
         }
         Err(_) => {
             eprintln!("Error occured during the sysconf call");
-            return Err(io::Error::from(io::ErrorKind::Other));
+            Err(io::Error::from(io::ErrorKind::Other))
         }
     }
 }
@@ -33,7 +33,7 @@ pub struct MemoryMapping {
 
 impl MemoryMapping {
     pub fn new(path: &Path, address: usize, flags: ProtFlags) -> MemoryMapping {
-        let fd = Self::prepare_fd(&path).expect("Can't prepare fd");
+        let fd = Self::prepare_fd(path).expect("Can't prepare fd");
         let page_size = get_page_size().expect("Can't get page size");
         let mapping =
             Self::prepare_mapping(fd, address, page_size, flags).expect("Can't prepare mapping");
@@ -83,10 +83,10 @@ impl MemoryMapping {
     pub fn read(&self, address: usize) -> u32 {
         let page_size = get_page_size().expect("Can't get page size");
         let mask = page_size - 1;
-        let byte_addr = (self.mapping as usize) + address & mask;
+        let byte_addr = ((self.mapping as usize) + address) & mask;
 
         unsafe {
-            let ptr = (self.mapping as *mut u32).offset(byte_addr as isize);
+            let ptr = (self.mapping as *mut u32).add(byte_addr);
             std::ptr::read(ptr)
         }
     }
@@ -94,10 +94,10 @@ impl MemoryMapping {
     pub fn write(&self, address: usize, value: u32) {
         let page_size = get_page_size().expect("Can't get page size");
         let mask = page_size - 1;
-        let byte_addr = (self.mapping as usize) + address & mask;
+        let byte_addr = ((self.mapping as usize) + address) & mask;
 
         unsafe {
-            let ptr = (self.mapping as *mut u32).offset(byte_addr as isize);
+            let ptr = (self.mapping as *mut u32).add(byte_addr);
             std::ptr::write(ptr, value)
         }
     }

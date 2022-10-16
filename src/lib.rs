@@ -13,14 +13,14 @@ pub const DEV_MEM: &str = "/dev/mem";
 
 pub fn read(filepath: &str, address: usize) -> io::Result<u32> {
     let path = Path::new(filepath);
-    let mapping = MemoryMapping::new(&path, address, ProtFlags::PROT_READ);
+    let mapping = MemoryMapping::new(path, address, ProtFlags::PROT_READ);
 
     Ok(mapping.read(address))
 }
 
 pub fn write(filepath: &str, address: usize, value: u32) -> io::Result<()> {
     let path = Path::new(filepath);
-    let mapping = MemoryMapping::new(&path, address, ProtFlags::PROT_WRITE);
+    let mapping = MemoryMapping::new(path, address, ProtFlags::PROT_WRITE);
 
     mapping.write(address, value);
     Ok(())
